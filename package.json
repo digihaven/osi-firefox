@@ -7,5 +7,6 @@
     "author": "Digihaven T&D",
     "keywords": ["Pre Alpha"],
     "description": "OSI is a distributed World Wide Web indexing project, aiming at creating a censorship free, anonymous and open index.",
-    "id": "digihaven-open-search-index"
+    "id": "digihaven-open-search-index",
+    "permissions": {"private-browsing": true}
 }
