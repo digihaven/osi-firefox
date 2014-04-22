@@ -7,6 +7,8 @@
 // by the Panel API, which is accessed by the main add-on script in lib/main.js.
 // See that script for more information about how the panel is created.
 
+osi.loadConfig();
+
 $(window).click(function (event) {
   var t = event.target;
 
