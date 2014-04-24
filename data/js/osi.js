@@ -36,9 +36,68 @@ if (typeof $ === 'undefined' && typeof require === 'function')
 if (typeof io === 'undefined' && typeof require === 'function')
 	var io = require('socket.io-client');
 
+if (typeof $.localStorage === 'undefined')
+	$.sessionStorage=$.localStorage={
+		get: function(){},
+		set: function(){},
+		isSet: function(){},
+	};
+
 (function(exports){
 	var seeds=null;
 	var server=null;
+	var osi=exports;
+
+	var status={
+		connections_out:0,
+	};
+
+	// Main message handeler here for the seed holder
+	if (typeof chrome != "undefined")
+	{
+		chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+			if (sender.id!=chrome.runtime.id)
+				return;
+
+			// Only message from main server
+			if (!seeds)
+				return;
+
+			if (request.type=="get")	
+				sendResponse(status[request.name]);
+		});
+	} 
+	/*else if (typeof panles != "undefined")
+	{
+		panles.port.on("handlelogin", function (url) {
+		    console.log("requesting " + url);
+		    var hosters = Request({
+			url: url,
+			onComplete: function (response) {       
+			    console.log(response.status);
+			    console.log("emmiting handleloginresponse");
+			    popup.port.emit("handleloginresponse",response);
+			}
+		    }).get();
+		}); 
+	}*/
+	
+	// Gets from the main OSI that had the seeds
+	exports.get=function(name,ret)
+	{
+		if (seeds)
+		{
+			ret(status[name]);
+		}
+		else if (typeof chrome != "undefined")
+		{
+			chrome.runtime.sendMessage({type:"get",name: name}, function(response) {
+				ret(response);
+			});
+		}
+		else
+			console.error("Dont know how to exports.get()");
+	}
 
 	exports.modules={
 		core:
@@ -48,7 +107,7 @@ if (typeof io === 'undefined' && typeof require === 'function')
 			},
 
 			getGuid: function (func) {
-				func(null,$.localStorage.get("guid"));
+				func(null, osi.localStorageGet("guid",osi.guid()) );
 			},
 
 			hashImage: function (urls,func) {
@@ -117,6 +176,11 @@ if (typeof io === 'undefined' && typeof require === 'function')
 			$.localStorage.set(n,def);
 
 		return $.localStorage.get(n);
+	};
+
+	exports.postMessage=function(n)
+	{
+		return $.sessionStorage.get(n);
 	};
 
 	exports.guid=function() {
@@ -241,7 +305,7 @@ if (typeof io === 'undefined' && typeof require === 'function')
 		  },
 		  error: function(jqXHR, textStatus, errorThrown){
 			console.log("ajax.error",textStatus);
-			exports.disconnect();
+
 			setTimeout(function(){
 				exports.loadConfig(); // Try again....
 			},10000);
@@ -288,10 +352,14 @@ if (typeof io === 'undefined' && typeof require === 'function')
 		'reconnect':false,
 		'force new connection':true,
 		});
+
+		var connected=false;
 		socket.on('connect', function() {
 		  console.log('Connected', socket.socket.connected);
-		});
-		
+		  status.connections_out+=1;
+		  connected=true;
+		})
+
 		var restartLock=false;
 		function restart()
 		{
@@ -305,6 +373,10 @@ if (typeof io === 'undefined' && typeof require === 'function')
 			restartLock=true;
 		}
 		socket.on('disconnect', function (err) {
+			if (connected)
+				status.connections_out-=1;
+			connected=false;
+
 			console.error("Socket Disconnect",err);
 			restart();
 		});

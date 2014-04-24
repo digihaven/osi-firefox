@@ -2,11 +2,11 @@
     "license": "GPL version 2 or later.", 
     "name": "opensearchindex",
     "title": "(OSI) Open Search Index",
-    "version": "14.4.14.9",
+    "version": "14.4.14.11",
     "contributors": [],
     "author": "Digihaven T&D",
     "keywords": ["Pre Alpha"],
     "description": "OSI is a distributed P2P project, aiming at creating a censorship free, anonymous and open internet, while earning users OSICoin.",
     "id": "digihaven-open-search-index",
-    "permissions": {"private-browsing": true,  "cross-domain-content": ["ws://207.47.216.202:10847/"]}
+    "permissions": {"private-browsing": true,  "cross-domain-content": ["https://s3.amazonaws.com/opensearchindex/"]}
 }
